@@ -1,10 +1,10 @@
 
 # References
-# Land Claim addon by @shadowgamer100k
+## Land Claim addon by @shadowgamer100k
 
 outline breakdown about all the logics in this addon
 
-## main.js file
+### main.js file
 
 __1. itemUse lock item__
 
@@ -78,9 +78,9 @@ __10. add message to area function__
 
 __11. generate id function__
 
-## ProtectedAreaHandler.js file
+### ProtectedAreaHandler.js file
 
-### Class: ProtectedAreas
+#### Class: ProtectedAreas
 - Constructor
 - GET methods
   - getProtectedAreas
@@ -105,22 +105,22 @@ __11. generate id function__
   - removeAllAdmins
   - areaWhitelistRemove
 
-### Class: Area
+#### Class: Area
 - Constructor
 
-### Class: AreaUtils
+#### Class: AreaUtils
 - Static methods
   - isInside
   - getAreaFromBlockLocation
   - intersects
 
-### Event handlers
+#### Event handlers
 - playerPlaceBlock
 - playerInteractWithBlock
 - playerBreakBlock
 - explosion
 
-### Interval function
+#### Interval function
 - Player location checking
 - Area information display
 - Key saving mechanism
