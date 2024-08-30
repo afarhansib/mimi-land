@@ -1,4 +1,5 @@
 export const config = {
     "mimi-item": "minecraft:diamond",
-    "mimi-item-nametag": "Mimi Land"
+    "mimi-item-nametag": "Mimi Land",
+    "chat-prefix": "§l[§r§eMimi Land§f§l]§r",
 }
