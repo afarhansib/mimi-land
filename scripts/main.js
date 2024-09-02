@@ -2,12 +2,17 @@ console.log(`Mimi Land loaded.`)
 
 import { world, system } from "@minecraft/server"
 import { MimiLandData } from "./db"
-import { isMimiItem } from "./utils"
+import { generateFantasyName, isMimiItem, readableCoords, sleep } from "./utils"
 import { config } from "./config"
+import { MimiLandGUI } from "./gui"
+import { spawnBot } from "./bot"
 
-world.afterEvents.itemUse.subscribe(({itemStack, source}) => {
+world.afterEvents.itemUse.subscribe(event => {
+    const { itemStack, source } = event
+
     if (isMimiItem(itemStack) && !source.isSneaking) {
-        source.sendMessage("Hi, I'm Mimi!")        
+        // source.sendMessage(generateFantasyName()) 
+        MimiLandGUI.openMenu(source, selectedCoords)
     }
 })
 
@@ -32,13 +37,36 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
                 player.sendMessage(`${config["chat-prefix"]} §lOpen Menu§r to Create Land or Cancel Selection.`)
             } else {
                 selectedCoords.get(player)[1] = { x, y, z }
-                player.sendMessage(`${config["chat-prefix"]} §lSecond§r position set to (§e${x}, ${y}, ${z}§r).`)
+                player.sendMessage(`${config["chat-prefix"]} §lSecond§r position set to (§e${readableCoords(block.location)}§r).`)
             }
         } else {
             selectedCoords.set(player, [{ x, y, z }])
-            player.sendMessage(`${config["chat-prefix"]} §lFirst§r position set to (§e${x}, ${y}, ${z}§r).`)
+            player.sendMessage(`${config["chat-prefix"]} §lFirst§r position set to (§e${readableCoords(block.location)}§r).`)
         }
     }
 
     lastInteractionTime = currentTime
 })
+
+import * as GT from "@minecraft/server-gametest"
+GT.registerAsync("mimibot", "spawn", spawnBot)
+    .maxTicks(2147483647)
+    .structureName("mimi:air")
+
+// Command to spawn the bot
+world.afterEvents.chatSend.subscribe((event) => {
+    if (event.message.trim() === ";mimibot") {
+        console.log("Spawning bot...")
+        world.getDimension("overworld").runCommand("function mimibot")
+    }
+})
+
+world.afterEvents.playerJoin.subscribe((event) => {
+    const player = event.playerName
+
+    console.log(`${player} joined the server.`)
+})
+
+system.runTimeout(async () => {
+    world.getDimension("overworld").runCommandAsync("function mimibot")
+}, 5 * 20)
