@@ -1,8 +1,9 @@
 import { generateFantasyName } from "./utils";
 
 export function spawnBot(test) {
-    // const botAmount = Math.floor(Math.random() * 1000)
-    const botAmount = 699
+    // const botAmount = Math.floor(Math.random() * 10)
+    const botAmount = Math.floor(Math.random() * 7) + 5
+    // const botAmount = 699
     console.log(`Spawning ${botAmount} bots...`)
 
     const bots = []

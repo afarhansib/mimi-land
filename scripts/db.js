@@ -1,12 +1,19 @@
 import { world } from "@minecraft/server"
+import { toIsoStringWTZ } from "./utils";
 
 export class MimiLandData {
-    static setData(key, data) {
-        const chunks = this.chunkData(JSON.stringify(data))
-        for (let i = 0; i < chunks.length; i++) {
-            world.setDynamicProperty(`${key}_chunk_${i}`, chunks[i])
+    static setData(key, data, isInternal = false) {
+        if (!isInternal) {
+            const oldData = this.getData(key);
+            this.storeDataHistory(key, oldData);
         }
-        world.setDynamicProperty(`${key}_chunks`, chunks.length)
+
+        const chunks = this.chunkData(JSON.stringify(data));
+        for (let i = 0; i < chunks.length; i++) {
+            world.setDynamicProperty(`${key}_chunk_${i}`, chunks[i]);
+        }
+        world.setDynamicProperty(`${key}_chunks`, chunks.length);
+        
     }
 
     static getData(key) {
@@ -25,12 +32,20 @@ export class MimiLandData {
         this.setData(key, existingData);
     }
 
+    static deleteDataById(key, id) {
+        let data = this.getData(key) || [];
+        data = data.filter(item => item.id !== id);
+        this.setData(key, data);
+    }    
+
     static clearData(key) {
-        const chunkCount = world.getDynamicProperty(`${key}_chunks`)
-        for (let i = 0; i < chunkCount; i++) {
-            world.setDynamicProperty(`${key}_chunk_${i}`, undefined)
-        }
-        world.setDynamicProperty(`${key}_chunks`, 0)
+        this.createDataCheckpoint(key)
+        this.setData(key, null)
+        // const chunkCount = world.getDynamicProperty(`${key}_chunks`)
+        // for (let i = 0; i < chunkCount; i++) {
+        //     world.setDynamicProperty(`${key}_chunk_${i}`, undefined)
+        // }
+        // world.setDynamicProperty(`${key}_chunks`, 0)
     }
 
     static chunkData(str, size = 30000) {
@@ -46,5 +61,19 @@ export class MimiLandData {
             return null;
         }
     }
+
+    static storeDataHistory(key, oldData) {
+        const history = this.getData(`${key}_history`) || [];
+        history.push({ timestamp: toIsoStringWTZ(new Date()), oldData });
+        this.setData(`${key}_history`, history, true);
+    }
+    
+    static createDataCheckpoint(key) {
+        const data = this.getData(key);
+        const checkpoints = this.getData(`${key}_checkpoints`) || [];
+        checkpoints.push({ timestamp: toIsoStringWTZ(new Date()), data });
+        this.setData(`${key}_checkpoints`, checkpoints, true);
+    }
+    
     
 }

@@ -1,13 +1,13 @@
 import { system } from "@minecraft/server"
 import { config } from "./config"
 
-const isMimiItem = itemStack => {
-    return itemStack.typeId === config["mimi-item"] && itemStack.nameTag === config["mimi-item-nametag"]
+export const isMimiItem = itemStack => {
+    return itemStack?.typeId === config["mimi-item"] && itemStack?.nameTag === config["mimi-item-nametag"]
 }
 
 const syllables = ["ae", "bri", "cal", "dor", "el", "fae", "glo", "hav", "il", "jor", "kae", "lum", "mor", "nyx", "or", "pyr", "qua", "ril", "syl", "tor", "um", "vel", "wyr", "xan", "yth", "zar"]
 
-function generateFantasyName(short = false) {
+export function generateFantasyName(short = false) {
     const generateWord = () => {
         const syllableCount = Math.random() < 0.5 ? 2 : 3
         let word = ""
@@ -20,14 +20,14 @@ function generateFantasyName(short = false) {
     return short ? generateWord() : `${generateWord()} ${generateWord()}`
 }
 
-const readableCoords = ({x, y, z}) => `X: ${x}, Y: ${y}, Z: ${z}`;
+export const readableCoords = ({x, y, z}) => `X: ${x}, Y: ${y}, Z: ${z}`;
 
-function formatDimensionName(dimensionId) {
+export function formatDimensionName(dimensionId) {
     const name = dimensionId.split(':')[1].replace(/_/g, ' ')
     return name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
-function sleep(ticks) {
+export function sleep(ticks) {
     return new Promise(resolve => {
         system.runTimeout(() => {
             resolve()
@@ -35,5 +35,84 @@ function sleep(ticks) {
     })
 }
 
+export function createParticleBox(dimension, pos1, pos2) {
+    const minX = Math.min(pos1.x, pos2.x);
+    const minY = Math.min(pos1.y, pos2.y);
+    const minZ = Math.min(pos1.z, pos2.z);
+    const maxX = Math.max(pos1.x, pos2.x) + 1;
+    const maxY = Math.max(pos1.y, pos2.y) + 1;
+    const maxZ = Math.max(pos1.z, pos2.z) + 1;
+    // const particleType = "minecraft:endrod";
+    // const particleType = "minecraft:villager_happy";
+    const particleType = "minecraft:balloon_gas_particle";
 
-export { isMimiItem, generateFantasyName, readableCoords, formatDimensionName, sleep }
+    // Create the edges of the box
+    for (let x = minX; x <= maxX; x++) {
+        trySpawnParticle(dimension, particleType, { x, y: minY, z: minZ });
+        trySpawnParticle(dimension, particleType, { x, y: minY, z: maxZ });
+        trySpawnParticle(dimension, particleType, { x, y: maxY, z: minZ });
+        trySpawnParticle(dimension, particleType, { x, y: maxY, z: maxZ });
+    }
+
+    for (let y = minY; y <= maxY; y++) {
+        trySpawnParticle(dimension, particleType, { x: minX, y, z: minZ });
+        trySpawnParticle(dimension, particleType, { x: minX, y, z: maxZ });
+        trySpawnParticle(dimension, particleType, { x: maxX, y, z: minZ });
+        trySpawnParticle(dimension, particleType, { x: maxX, y, z: maxZ });
+    }
+
+    for (let z = minZ; z <= maxZ; z++) {
+        trySpawnParticle(dimension, particleType, { x: minX, y: minY, z });
+        trySpawnParticle(dimension, particleType, { x: minX, y: maxY, z });
+        trySpawnParticle(dimension, particleType, { x: maxX, y: minY, z });
+        trySpawnParticle(dimension, particleType, { x: maxX, y: maxY, z });
+    }
+}
+
+function trySpawnParticle(dimension, particleType, location) {
+    try {
+        dimension.spawnParticle(particleType, location);
+    } catch (error) {
+        // Ignore the error and continue
+    }
+}
+
+export function createParticleAroundBlock(dimension, particleType, blockLocation) {
+    const { x, y, z } = blockLocation;
+
+    for (let dx = 0; dx <= 1; dx++) {
+        for (let dy = 0; dy <= 1; dy++) {
+            for (let dz = 0; dz <= 1; dz++) {
+                trySpawnParticle(dimension, particleType, { x: x + dx, y: y + dy, z: z + dz });
+            }
+        }
+    }
+}
+
+export function toIsoStringWTZ(date) {
+    var tzo = -date.getTimezoneOffset(),
+        dif = tzo >= 0 ? '+' : '-',
+        pad = function (num) {
+            return (num < 10 ? '0' : '') + num;
+        };
+
+    return date.getFullYear() +
+        '-' + pad(date.getMonth() + 1) +
+        '-' + pad(date.getDate()) +
+        'T' + pad(date.getHours()) +
+        ':' + pad(date.getMinutes()) +
+        ':' + pad(date.getSeconds()) +
+        dif + pad(Math.floor(Math.abs(tzo) / 60)) +
+        ':' + pad(Math.abs(tzo) % 60);
+}
+
+const urlAlphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
+
+export function nanoid(size = 21) {
+  let id = ''
+  let i = size
+  while (i--) {
+    id += urlAlphabet[(Math.random() * 64) | 0]
+  }
+  return id
+}
