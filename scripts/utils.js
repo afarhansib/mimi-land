@@ -2,7 +2,11 @@ import { system } from "@minecraft/server"
 import { config } from "./config"
 
 export const isMimiItem = itemStack => {
-    return itemStack?.typeId === config["mimi-item"] && itemStack?.nameTag === config["mimi-item-nametag"]
+    try {
+        return itemStack?.typeId === config["mimi-item"] && itemStack?.nameTag === config["mimi-item-nametag"]
+    } catch (error) {
+        return false
+    }
 }
 
 const syllables = ["ae", "bri", "cal", "dor", "el", "fae", "glo", "hav", "il", "jor", "kae", "lum", "mor", "nyx", "or", "pyr", "qua", "ril", "syl", "tor", "um", "vel", "wyr", "xan", "yth", "zar"]
@@ -116,3 +120,28 @@ export function nanoid(size = 21) {
   }
   return id
 }
+
+export function isInsideArea(location, dimension, area) {
+    const minX = Math.min(area.from.x, area.to.x);
+    const maxX = Math.max(area.from.x, area.to.x);
+    const minY = Math.min(area.from.y, area.to.y);
+    const maxY = Math.max(area.from.y, area.to.y);
+    const minZ = Math.min(area.from.z, area.to.z);
+    const maxZ = Math.max(area.from.z, area.to.z);
+
+    return dimension === area.dimension &&
+           location.x >= minX && location.x <= maxX &&
+           location.y >= minY && location.y <= maxY &&
+           location.z >= minZ && location.z <= maxZ;
+}
+
+export function findAreaByLocation(location, dimension, areas) {
+    return areas.find(area => isInsideArea(location, dimension, area));
+}
+
+export const isOwner = (player, area) => player.name === area.owner;
+
+export const isAllowed = (player, area) => {
+    return isOwner(player, area) || 
+           (area.whitelisted && area.whitelisted.includes(player.name));
+};

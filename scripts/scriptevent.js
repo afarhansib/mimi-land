@@ -1,6 +1,7 @@
 import { world } from "@minecraft/server";
 import { MimiLandData } from "./db";
 import { MimiLandAPI } from "./net";
+import { mimiLandRunner } from "./protection";
 
 export const scriptEventHandler = async e => {
     switch (e.id) {
@@ -34,6 +35,9 @@ export const scriptEventHandler = async e => {
             // console.log(JSON.stringify(dynamicProperties, null, 2));
             console.log('Mimi Land Data Length: ' + JSON.stringify(dynamicProperties).length)
             MimiLandAPI.sendData("data", dynamicProperties);
+            break;
+        case "mimi:p":
+            mimiLandRunner()
             break;
         default:
             break;

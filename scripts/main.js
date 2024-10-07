@@ -82,6 +82,15 @@ world.afterEvents.itemUse.subscribe(event => {
     }
 })
 
+system.runInterval(() => {
+    mimiLandRunner()
+}, 1 * 20)
+
+world.beforeEvents.playerPlaceBlock.subscribe(event => blockInteractionHandler(event))
+world.beforeEvents.playerBreakBlock.subscribe(event => blockInteractionHandler(event))
+// world.beforeEvents.playerInteractWithBlock.subscribe(event => blockInteractionHandler(event, !event.isFirstEvent, true))
+world.beforeEvents.playerInteractWithBlock.subscribe(event => blockInteractionHandler(event, null, true))
+world.beforeEvents.explosion.subscribe(event => explosionHandler(event))
 // system.runInterval(() => {
 //     // let selectedCoords = [{"x":-498,"y":67,"z":-2000},{"x":-506,"y":62,"z":-2006}]
 //     createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
@@ -90,6 +99,7 @@ world.afterEvents.itemUse.subscribe(event => {
 
 import * as GT from "@minecraft/server-gametest"
 import { scriptEventHandler } from "./scriptevent"
+import { blockInteractionHandler, explosionHandler, mimiLandRunner } from "./protection"
 GT.registerAsync("mimibot", "spawn", spawnBot)
     .maxTicks(2147483647)
     .structureName("mimi:air")

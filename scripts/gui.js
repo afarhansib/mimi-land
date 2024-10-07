@@ -17,7 +17,7 @@ export class MimiLandGUI {
             ["§lABOUT", null, () => this.handleAbout(player, selectedCoords)]
         ]
 
-        const userAreas = (MimiLandData.getData("mimi_land") || []).filter(item => item.owner === "yotbu")
+        const userAreas = (MimiLandData.getData("mimi_land") || []).filter(item => item.owner === player.name)
         // console.log(userAreas)
 
         userAreas.forEach((item, index) => {
