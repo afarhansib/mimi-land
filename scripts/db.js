@@ -36,7 +36,16 @@ export class MimiLandData {
         let data = this.getData(key) || [];
         data = data.filter(item => item.id !== id);
         this.setData(key, data);
-    }    
+    }
+
+    static updateDataById(key, id, updatedData) {
+        let data = this.getData(key) || [];
+        const index = data.findIndex(item => item.id === id);
+        if (index !== -1) {
+            data[index] = { ...data[index], ...updatedData };
+            this.setData(key, data);
+        }
+    }
 
     static clearData(key) {
         this.createDataCheckpoint(key)

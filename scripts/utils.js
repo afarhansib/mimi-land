@@ -21,10 +21,10 @@ export function generateFantasyName(short = false) {
         return word.charAt(0).toUpperCase() + word.slice(1)
     }
 
-    return short ? generateWord() : `${generateWord()} ${generateWord()}`
+    return short ? (generateWord()).toLowerCase() : `${generateWord()} ${generateWord()}`
 }
 
-export const readableCoords = ({x, y, z}) => `X: ${x}, Y: ${y}, Z: ${z}`;
+export const readableCoords = ({ x, y, z }) => `X: ${x}, Y: ${y}, Z: ${z}`;
 
 export function formatDimensionName(dimensionId) {
     const name = dimensionId.split(':')[1].replace(/_/g, ' ')
@@ -113,12 +113,12 @@ export function toIsoStringWTZ(date) {
 const urlAlphabet = 'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
 
 export function nanoid(size = 21) {
-  let id = ''
-  let i = size
-  while (i--) {
-    id += urlAlphabet[(Math.random() * 64) | 0]
-  }
-  return id
+    let id = ''
+    let i = size
+    while (i--) {
+        id += urlAlphabet[(Math.random() * 64) | 0]
+    }
+    return id
 }
 
 export function isInsideArea(location, dimension, area) {
@@ -130,9 +130,9 @@ export function isInsideArea(location, dimension, area) {
     const maxZ = Math.max(area.from.z, area.to.z);
 
     return dimension === area.dimension &&
-           location.x >= minX && location.x <= maxX &&
-           location.y >= minY && location.y <= maxY &&
-           location.z >= minZ && location.z <= maxZ;
+        location.x >= minX && location.x <= maxX &&
+        location.y >= minY && location.y <= maxY &&
+        location.z >= minZ && location.z <= maxZ;
 }
 
 export function findAreaByLocation(location, dimension, areas) {
@@ -142,6 +142,17 @@ export function findAreaByLocation(location, dimension, areas) {
 export const isOwner = (player, area) => player.name === area.owner;
 
 export const isAllowed = (player, area) => {
-    return isOwner(player, area) || 
-           (area.whitelisted && area.whitelisted.includes(player.name));
+    return isOwner(player, area) ||
+        (area.whitelisted && area.whitelisted.includes(player.name));
 };
+
+export function cleanNames(nameString) {
+    return nameString.split(',')
+        .map(name => name.trim())
+        .filter(name => name !== '')
+}
+
+export function getSelectedNames(names, formResult) {
+    const booleans = formResult.slice(-names.length)
+    return names.filter((name, index) => booleans[index])
+}

@@ -119,7 +119,7 @@ world.afterEvents.playerJoin.subscribe((event) => {
 })
 
 system.runTimeout(async () => {
-    // world.getDimension("overworld").runCommandAsync("function mimibot")
+    world.getDimension("overworld").runCommandAsync("function mimibot")
 }, 5 * 20)
 
 system.afterEvents.scriptEventReceive.subscribe(scriptEventHandler)
