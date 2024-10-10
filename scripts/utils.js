@@ -156,3 +156,13 @@ export function getSelectedNames(names, formResult) {
     const booleans = formResult.slice(-names.length)
     return names.filter((name, index) => booleans[index])
 }
+
+export const showLandInfo = (player, playerArea) => {
+    createParticleBox(player.dimension, playerArea.from, playerArea.to)
+    const landDetails = [
+        `${config["chat-prefix"]}\n`,
+        `§lName: §r§a${playerArea.name}§r`,
+        `§lOwner: §r§a${playerArea.owner}§r`
+    ]
+    player.onScreenDisplay.setActionBar(landDetails.join("\n"))
+}

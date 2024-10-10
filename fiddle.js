@@ -61,3 +61,49 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         console.log(`Mimi Land data cleared.`)
     }
 })
+
+// Subscribe to the `projectileHitEntity` event, which is triggered when a projectile hits an entity
+world.afterEvents.projectileHitEntity.subscribe((eventData) => {
+    // Destructure the eventData to get the source entity (the one that shot the projectile)
+    const { source } = eventData;
+    const hittedEntity = eventData.getEntityHit()
+    console.log(JSON.stringify(eventData.getEntityHit()))
+
+    // Get the entity that was hit by the projectile
+    const hitEntity = eventData.getEntityHit()?.entity;
+
+    if (hitEntity) {
+        const { x, y, z } = hitEntity.location;
+        const coordinates = `${x}, ${y}, ${z}`;
+        const message = `${source.name} hit the entity at location ${coordinates}`;
+        world.sendMessage(message);
+
+        // Check if the hit entity is a villager
+        if (hitEntity.typeId === "minecraft:villager_v2") {
+            console.log('entity is ' + hitEntity.typeId)
+            const healthComponent = hitEntity.getComponent("health");
+            console.log(JSON.stringify(healthComponent))
+            if (healthComponent) {
+                // Restore the villager's health to its maximum value
+                console.log(healthComponent.effectiveMax)
+                console.log(healthComponent.currentValue)
+                healthComponent.setCurrentValue(healthComponent.effectiveMax);
+            }
+        }
+    }
+});
+
+world.afterEvents.entityHurt.subscribe((event) => {
+    if (event.damageSource.damagingEntity instanceof Player) {
+        const player = event.damageSource.damagingEntity
+        const hurtEntity = event.hurtEntity
+        const location = event.hurtEntity.location
+        const damage = event.damage
+
+        const currentHealth = hurtEntity.getComponent("health").currentValue
+        const maxHealth = hurtEntity.getComponent("health").effectiveMax
+        console.log(JSON.stringify(event.damage))
+        hurtEntity.getComponent("health").setCurrentValue(maxHealth)
+        player.sendMessage("Yamete kudasai! No hurting entities in claimed areas! (╥_╥)")
+    }
+})

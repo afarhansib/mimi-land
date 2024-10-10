@@ -1,7 +1,9 @@
 import { EquipmentSlot, world } from "@minecraft/server"
 import { MimiLandData } from "./db";
-import { createParticleBox, findAreaByLocation, formatDimensionName, isAllowed, isMimiItem, readableCoords } from "./utils";
+import { createParticleBox, findAreaByLocation, formatDimensionName, isAllowed, isMimiItem, readableCoords, showLandInfo } from "./utils";
 import { config } from "./config";
+
+const playerLastAreas = new Map()
 
 export const mimiLandRunner = () => {
     const allArea = MimiLandData.getData('mimi_land')
@@ -18,29 +20,36 @@ export const mimiLandRunner = () => {
         }
         const equippable = player.getComponent("equippable");
         const slot = equippable.getEquipmentSlot(EquipmentSlot.Mainhand)
-        if (!player.isSneaking && !isMimiItem(slot)) {
-            continue;
-        }
-        
+
         try {
             // player.sendMessage(`${JSON.stringify(player.location)}`)
             const playerBlock = player.dimension.getBlock(player.location)
             const playerArea = findAreaByLocation(playerBlock, player.dimension.id, allArea)
 
+            const lastArea = playerLastAreas.get(player.name)
+
+            const areaChanged = playerArea?.id !== lastArea?.id
+
+            if (areaChanged) {
+                if (playerArea) {
+                    player.sendMessage(`${config["chat-prefix"]} §bYou've entered §r§a"${playerArea.name}"§b land!`)
+                    showLandInfo(player, playerArea)
+                } else if (lastArea) {
+                    player.sendMessage(`${config["chat-prefix"]} §eYou've left §r§a"${lastArea.name}"§e land.`)
+                }
+                playerLastAreas.set(player.name, playerArea)
+            }
             // player.onScreenDisplay.setActionBar(`§l${JSON.stringify(playerBlock)}`)
 
             if (playerArea) {
-                // console.log(`Player ${player.name} is in area ${playerArea.name}`)
-                createParticleBox(player.dimension, playerArea.from, playerArea.to)
-                const landDetails = [
-                    `${config["chat-prefix"]}\n`,
-                    `§lName: §r§a${playerArea.name}§r`,
-                    `§lOwner: §r§a${playerArea.owner}§r`,
-                    // `§lFrom: §r§a${readableCoords(playerArea.from)}§r`,
-                    // `§lTo: §r§a${readableCoords(playerArea.to)}§r`
-                ]
-                player.onScreenDisplay.setActionBar(landDetails.join("\n"))
-                
+                if (!isAllowed(player, playerArea)) {
+                    player.addEffect("weakness", 20 * 2, { amplifier: 255, showParticles: false })
+                }
+                if (player.isSneaking || isMimiItem(slot)) {
+                    // console.log(`Player ${player.name} is in area ${playerArea.name}`)
+                    showLandInfo(player, playerArea)
+                }
+
             } else {
                 // console.log(`Player ${player.name} is not in any area`)
             }
@@ -56,13 +65,16 @@ export const blockInteractionHandler = (event, hold, isInteract) => {
     // if (hold) {
     //     return
     // }
+    const eventLocation = event?.block || event?.source?.dimension.getBlock(event?.source?.location)
+    const eventDimension = event?.player?.dimension.id || event?.source?.dimension.id
+    const eventSource = event?.source || event?.player
 
     const whitelistedBlocks = ["minecraft:ender_chest"]
-    
+
     try {
-        const area = findAreaByLocation(event.block, event.player.dimension.id, MimiLandData.getData('mimi_land'))
+        const area = findAreaByLocation(eventLocation, eventDimension, MimiLandData.getData('mimi_land'))
         if (area) {
-            if (isAllowed(event.player, area)) {
+            if (isAllowed(eventSource, area)) {
                 // console.log(`Player ${event.player.name} is allowed to interact with block ${event.block.location}`)
             } else {
                 // console.log(event.block.typeId)
@@ -71,7 +83,7 @@ export const blockInteractionHandler = (event, hold, isInteract) => {
                         return
                     }
                 }
-                event.player.sendMessage(`${config["chat-prefix"]} §c§lAccess denied!§r Spamming may result in penalties.`)
+                eventSource.sendMessage(`${config["chat-prefix"]} §c§lAccess denied!§r Spamming may result in penalties.`)
                 event.cancel = true
             }
         } else {

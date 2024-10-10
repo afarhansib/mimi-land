@@ -36,8 +36,11 @@ export const scriptEventHandler = async e => {
             console.log('Mimi Land Data Length: ' + JSON.stringify(dynamicProperties).length)
             MimiLandAPI.sendData("data", dynamicProperties);
             break;
-        case "mimi:p":
-            mimiLandRunner()
+        case "mimi:md":
+            world.getDimension('overworld').runCommandAsync(`inputpermission set yotbu movement disabled`)
+            break;
+        case "mimi:me":
+            world.getDimension('overworld').runCommandAsync(`inputpermission set yotbu movement enabled`)
             break;
         default:
             break;

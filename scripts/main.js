@@ -1,6 +1,6 @@
 console.log(`Mimi Land loaded.`)
 
-import { world, system } from "@minecraft/server"
+import { world, system, Player } from "@minecraft/server"
 import { MimiLandData } from "./db"
 import { createParticleAroundBlock, createParticleBox, generateFantasyName, isMimiItem, readableCoords, sleep } from "./utils"
 import { config } from "./config"
@@ -41,8 +41,8 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
                 })
             } else {
                 selectedCoords.get(player)[1] = { x, y, z }
-                
-                
+
+
                 player.sendMessage(`${config["chat-prefix"]} §lSecond§r position set to (§e${readableCoords(block.location)}§r).`)
                 system.run(() => {
                     createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
@@ -90,12 +90,15 @@ world.beforeEvents.playerPlaceBlock.subscribe(event => blockInteractionHandler(e
 world.beforeEvents.playerBreakBlock.subscribe(event => blockInteractionHandler(event))
 // world.beforeEvents.playerInteractWithBlock.subscribe(event => blockInteractionHandler(event, !event.isFirstEvent, true))
 world.beforeEvents.playerInteractWithBlock.subscribe(event => blockInteractionHandler(event, null, true))
+// world.beforeEvents.playerInteractWithEntity.subscribe(event => blockInteractionHandler(event, null, true))
 world.beforeEvents.explosion.subscribe(event => explosionHandler(event))
 // system.runInterval(() => {
 //     // let selectedCoords = [{"x":-498,"y":67,"z":-2000},{"x":-506,"y":62,"z":-2006}]
 //     createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
 //     // createParticleBox(world.getDimension('overworld'), selectedCoords[0], selectedCoords[1])
 // }, 20)
+
+world.beforeEvents.itemUse.subscribe(event => blockInteractionHandler(event))
 
 import * as GT from "@minecraft/server-gametest"
 import { scriptEventHandler } from "./scriptevent"
@@ -119,7 +122,7 @@ world.afterEvents.playerJoin.subscribe((event) => {
 })
 
 system.runTimeout(async () => {
-    world.getDimension("overworld").runCommandAsync("function mimibot")
+    // world.getDimension("overworld").runCommandAsync("function mimibot")
 }, 5 * 20)
 
 system.afterEvents.scriptEventReceive.subscribe(scriptEventHandler)
