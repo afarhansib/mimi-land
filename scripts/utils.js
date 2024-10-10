@@ -136,7 +136,7 @@ export function isInsideArea(location, dimension, area) {
 }
 
 export function findAreaByLocation(location, dimension, areas) {
-    return areas.find(area => isInsideArea(location, dimension, area));
+    return areas?.find(area => isInsideArea(location, dimension, area));
 }
 
 export const isOwner = (player, area) => player.name === area.owner;
@@ -166,3 +166,39 @@ export const showLandInfo = (player, playerArea) => {
     ]
     player.onScreenDisplay.setActionBar(landDetails.join("\n"))
 }
+
+export function isOverlapping(newArea, newAreaDimension, existingAreas) {
+    console.log(JSON.stringify(arguments))
+    const [newA, newB] = newArea
+    const newMin = {
+        x: Math.min(newA.x, newB.x),
+        y: Math.min(newA.y, newB.y),
+        z: Math.min(newA.z, newB.z)
+    }
+    const newMax = {
+        x: Math.max(newA.x, newB.x),
+        y: Math.max(newA.y, newB.y),
+        z: Math.max(newA.z, newB.z)
+    }
+
+    return existingAreas.some(area => {
+        const existingMin = {
+            x: Math.min(area.from.x, area.to.x),
+            y: Math.min(area.from.y, area.to.y),
+            z: Math.min(area.from.z, area.to.z)
+        }
+        const existingMax = {
+            x: Math.max(area.from.x, area.to.x),
+            y: Math.max(area.from.y, area.to.y),
+            z: Math.max(area.from.z, area.to.z)
+        }
+
+        return (
+            newMin.x <= existingMax.x && newMax.x >= existingMin.x &&
+            newMin.y <= existingMax.y && newMax.y >= existingMin.y &&
+            newMin.z <= existingMax.z && newMax.z >= existingMin.z &&
+            newAreaDimension === area.dimension
+        )
+    })
+}
+

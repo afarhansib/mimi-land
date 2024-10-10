@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mimi Land Visualizer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        #map { height: 400px; }
+        #coordinates-display {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="coordinates-display">Cursor: X: 0, Z: 0</div>
+    <textarea id="coordinates" rows="4" cols="50"></textarea>
+    <button onclick="drawAreas()">Draw Areas</button>
+
+    <script>
+        var map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -5
+        }).setView([0, 0], 0);
+
+        L.GridLayer.GridCanvas = L.GridLayer.extend({
+            createTile: function(coords) {
+                var tile = L.DomUtil.create('canvas', 'leaflet-tile');
+                var ctx = tile.getContext('2d');
+                var size = this.getTileSize();
+                tile.width = size.x;
+                tile.height = size.y;
+                ctx.strokeStyle = '#ddd';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(size.x, 0);
+                ctx.lineTo(size.x, size.y);
+                ctx.lineTo(0, size.y);
+                ctx.closePath();
+                ctx.stroke();
+                return tile;
+            }
+        });
+
+        new L.GridLayer.GridCanvas().addTo(map);
+
+        var coordinatesDisplay = document.getElementById('coordinates-display');
+
+        map.on('mousemove', function(e) {
+            coordinatesDisplay.innerHTML = `Cursor: X: ${Math.round(e.latlng.lng)}, Z: ${Math.round(e.latlng.lat)}`;
+        });
+
+        function drawAreas() {
+            var input = document.getElementById('coordinates').value;
+            var areas = JSON.parse(input);
+            areas.forEach(area => {
+                var bounds = [
+                    [area.from.z, area.from.x],
+                    [area.to.z, area.to.x]
+                ];
+                L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
+            });
+        }
+    </script>
+</body>
+</html>

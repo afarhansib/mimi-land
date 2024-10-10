@@ -107,3 +107,14 @@ world.afterEvents.entityHurt.subscribe((event) => {
         player.sendMessage("Yamete kudasai! No hurting entities in claimed areas! (╥_╥)")
     }
 })
+
+
+world.afterEvents.itemUse.subscribe(event => {
+    if (event.itemStack.typeId === `minecraft:iron_ingot` && event.itemStack.nameTag === `Mimi Land Print`) {
+        const mimiData = MimiLandData.getData('mimi_land')
+        console.log(`Mimi Land Data Length: ${JSON.stringify(mimiData).length}`)
+        // console.log(`Mimi Land Data: ${JSON.stringify(mimiData)}`)
+        console.log(JSON.stringify(mimiData, null, 2))
+        // world.sendMessage(`Mimi Land Data: ${JSON.stringify(mimiData)}`)
+    }
+})

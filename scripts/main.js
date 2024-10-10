@@ -2,7 +2,7 @@ console.log(`Mimi Land loaded.`)
 
 import { world, system, Player } from "@minecraft/server"
 import { MimiLandData } from "./db"
-import { createParticleAroundBlock, createParticleBox, generateFantasyName, isMimiItem, readableCoords, sleep } from "./utils"
+import { createParticleAroundBlock, createParticleBox, findAreaByLocation, generateFantasyName, isMimiItem, isOverlapping, readableCoords, sleep } from "./utils"
 import { config } from "./config"
 import { MimiLandGUI } from "./gui"
 import { spawnBot } from "./bot"
@@ -28,6 +28,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
         // event.cancel = true
         return
     }
+    lastInteractionTime = currentTime
     const { block, player, itemStack } = event
     const { x, y, z } = block.location
 
@@ -40,8 +41,23 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
                     player.playSound("random.pop")
                 })
             } else {
-                selectedCoords.get(player)[1] = { x, y, z }
 
+                const firstCoord = selectedCoords.get(player)[0]
+                const existingAreas = MimiLandData.getData("mimi_land") || []
+                const newArea = [
+                    { x: Math.min(firstCoord.x, x), y: Math.min(firstCoord.y, y), z: Math.min(firstCoord.z, z) },
+                    { x: Math.max(firstCoord.x, x), y: Math.max(firstCoord.y, y), z: Math.max(firstCoord.z, z) }
+                ]
+
+                // console.log(JSON.stringify([newArea, player.dimension.id, existingAreas]))
+                console.log(JSON.stringify(isOverlapping(newArea, player.dimension.id, existingAreas)))
+                if (isOverlapping(newArea, player.dimension.id, existingAreas)) {
+                    player.sendMessage(`${config["chat-prefix"]} §eThis selection overlaps with existing land!`)
+                    // player.playSound("random.break")
+                    return
+                }
+
+                selectedCoords.get(player)[1] = { x, y, z }
 
                 player.sendMessage(`${config["chat-prefix"]} §lSecond§r position set to (§e${readableCoords(block.location)}§r).`)
                 system.run(() => {
@@ -55,6 +71,17 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
                 })
             }
         } else {
+            const existingAreas = MimiLandData.getData("mimi_land") || []
+            const overlappingArea = findAreaByLocation(block.location, player.dimension.id, existingAreas)
+            // console.log(JSON.stringify([block.location, player.dimension.id, existingAreas]))
+            // console.log(JSON.stringify(overlappingArea))
+
+            if (overlappingArea) {
+                player.sendMessage(`${config["chat-prefix"]} §eThis block is inside an existing land!`)
+                // player.playSound("random.break")
+                return
+            }
+
             selectedCoords.set(player, [{ x, y, z }])
             player.sendMessage(`${config["chat-prefix"]} §lFirst§r position set to (§e${readableCoords(block.location)}§r).`)
             system.run(() => {
@@ -69,17 +96,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
         }
     }
 
-    lastInteractionTime = currentTime
-})
-
-world.afterEvents.itemUse.subscribe(event => {
-    if (event.itemStack.typeId === `minecraft:iron_ingot` && event.itemStack.nameTag === `Mimi Land Print`) {
-        const mimiData = MimiLandData.getData('mimi_land')
-        console.log(`Mimi Land Data Length: ${JSON.stringify(mimiData).length}`)
-        // console.log(`Mimi Land Data: ${JSON.stringify(mimiData)}`)
-        console.log(JSON.stringify(mimiData, null, 2))
-        // world.sendMessage(`Mimi Land Data: ${JSON.stringify(mimiData)}`)
-    }
+    
 })
 
 system.runInterval(() => {
