@@ -1,6 +1,6 @@
 import { ActionFormData, MessageFormData, ModalFormData } from "@minecraft/server-ui";
 import { config } from "./config";
-import { cleanNames, formatDimensionName, generateFantasyName, getSelectedNames, nanoid, readableCoords, toIsoStringWTZ } from "./utils";
+import { cleanNames, formatDimensionName, generateFantasyName, getSelectedNames, nanoid, readableCoords, sortOwners, toIsoStringWTZ } from "./utils";
 import { system, world } from "@minecraft/server";
 import { MimiLandData } from "./db";
 
@@ -44,8 +44,8 @@ export class MimiLandGUI {
                 buttonOptions.unshift(["§l§2CREATE LAND", null, () => this.handleCreateLand(player, selectedCoords, ParticleRunner)])
             }
         }
-        if (player.hasTag("mimi")) {
-            buttonOptions.push(["§l§4ADMIN PANEL"])
+        if (player.hasTag(config["admin-tag"])) {
+            buttonOptions.push(["§l§4ADMIN PANEL", null, () => this.handleAdminPanel(player, selectedCoords)])
         }
 
         buttonOptions.forEach(([text, icon]) => {
@@ -125,6 +125,63 @@ export class MimiLandGUI {
             system.clearRun(ParticleRunner)
             selectedCoords.delete(player)
         })
+    }
+
+    static handleAdminPanel(player, selectedCoords) {
+        const allLands = MimiLandData.getData(`mimi_land`)
+        const allOwners = MimiLandData.getOwner()
+
+        // console.log(JSON.stringify(allOwners))
+
+        const stats = [
+            `\n${config["chat-prefix"]} Statistics:\n `,
+            `§lTotal Lands: §r§a${allLands.length}§r`,
+            `§lTotal Owner: §r§a${allOwners.length}§r`,
+            `\n`
+        ]
+
+        const adminPanel = new ActionFormData()
+        adminPanel.title("§lMimi Land§r Admin")
+        adminPanel.body(stats.join("\n"))
+
+        const buttonActions = [
+            {
+                text: "§lBACK",
+                action: () => this.openMenu(player, selectedCoords)
+            }
+        ]
+
+        if (allOwners.length > 0) {
+            buttonActions.unshift({
+                text: "§lALL OWNERS\n§r§o§8by total",
+                action: () => this.handleAllOwners(player, selectedCoords, allOwners, allLands, 'by total')
+            })
+            buttonActions.unshift({
+                text: "§lALL OWNERS\n§r§o§8by alphabet",
+                action: () => this.handleAllOwners(player, selectedCoords, allOwners, allLands, 'by alphabet')
+            })
+        }
+
+        if (allLands.length > 0) {
+            buttonActions.unshift({
+                text: "§lALL LANDS\n§r§o§8by created",
+                action: () => this.handleAllLands(player, selectedCoords, allLands, 'by created')
+            })
+            buttonActions.unshift({
+                text: "§lALL LANDS\n§r§o§8by alphabet",
+                action: () => this.handleAllLands(player, selectedCoords, allLands, 'by alphabet')
+            })
+        }
+
+        buttonActions.forEach(({ text, action }) => {
+            adminPanel.button(text)
+        })
+
+        adminPanel.show(player).then(({ canceled, selection }) => {
+            if (canceled) return
+            buttonActions[selection].action()
+        })
+
     }
 
     static handleLandDetails(player, area, selectedCoords, asShared = false) {
@@ -255,6 +312,96 @@ export class MimiLandGUI {
             // console.log(JSON.stringify(allPlayersNoOwner))
             // console.log(JSON.stringify(formValues))
             // console.log(JSON.stringify(newLandDetails))
+        })
+    }
+
+    static handleAllOwners(player, selectedCoords, owners, lands, sortedBy) {
+        const allOwnersPanel = new ActionFormData()
+        allOwnersPanel.title(`All §lMimi Land§r Owners`)
+        allOwnersPanel.body('\nSorted ' + sortedBy + '\n\n')
+
+        // console.log(JSON.stringify(owners))
+        const sortedOwners = sortOwners(owners, sortedBy)
+
+        const buttonActions = []
+
+        sortedOwners.forEach(({ owner, count }) => {
+            buttonActions.push({
+                text: `${owner} §e[§8§l${count}§e]`,
+                action: () => {
+                    this.handleAllOwnersLand(player, selectedCoords, owner, lands, count)
+                }
+            })
+        })
+
+        buttonActions.forEach(({ text, action }) => {
+            allOwnersPanel.button(text)
+        })
+
+        allOwnersPanel.show(player).then(({ canceled, selection }) => {
+            if (canceled) return
+            buttonActions[selection].action()
+        })
+    }
+
+    static handleAllOwnersLand(player, selectedCoords, owner, lands, count) {
+        const allOwnersLandPanel = new ActionFormData()
+        const ownedLands = lands.filter(land => land.owner === owner)
+
+        allOwnersLandPanel.title(`All ${owner}'s Lands`)
+        allOwnersLandPanel.body(`\n§l${owner} §r§7has §l${count}§r§7 lands.\n\n`)
+
+        const buttonActions = []
+
+        const sortedLands = ownedLands.sort((a, b) => a.name.localeCompare(b.name))
+
+        sortedLands.forEach(land => {
+            buttonActions.push({
+                text: `${land.name}`,
+                action: () => {
+                    this.handleLandDetails(player, land, selectedCoords)
+                }
+            })
+        })
+
+        buttonActions.forEach(({ text, action }) => {
+            allOwnersLandPanel.button(text)
+        })
+
+        allOwnersLandPanel.show(player).then(({ canceled, selection }) => {
+            if (canceled) return
+            buttonActions[selection].action()
+        })
+    }
+
+    static handleAllLands(player, selectedCoords, lands, sortedBy) {
+        const allLandsPanel = new ActionFormData()
+
+        allLandsPanel.title(`All §lMimi Land§rs`)
+        allLandsPanel.body('\nSorted ' + sortedBy + '\n\n')
+
+        const buttonActions = []
+        let sortedLands = lands
+        if (sortedBy === 'by alphabet') {
+            sortedLands = lands.sort((a, b) => a.name.localeCompare(b.name))
+        }
+
+        sortedLands.forEach(land => {
+            buttonActions.push({
+                text: `${land.name}`,
+                action: () => {
+                    this.handleLandDetails(player, land, selectedCoords)
+                }
+            })
+        })
+
+        buttonActions.forEach(({ text, action }) => {
+            allLandsPanel.button(text)
+        })
+
+        allLandsPanel.show(player).then(({ canceled, selection }) => {
+            if (canceled) return
+            buttonActions[selection].action()
         })
     }
 }

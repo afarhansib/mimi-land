@@ -9,21 +9,27 @@ export const mimiLandRunner = () => {
     const allArea = MimiLandData.getData('mimi_land')
 
     for (const player of world.getPlayers()) {
-        const dimension = world.getDimension(player.dimension.id)
-        const withers = dimension.getEntities({ type: "minecraft:wither" });
-        for (const wither of withers) {
-            const witherBlock = dimension.getBlock(wither.location);
-            const witherArea = findAreaByLocation(witherBlock, dimension.id, allArea);
-            if (witherArea) {
-                wither.remove();
-            }
-        }
-        const equippable = player.getComponent("equippable");
-        const slot = equippable.getEquipmentSlot(EquipmentSlot.Mainhand)
-
         try {
+            const dimension = world.getDimension(player.dimension.id)
+            const withers = dimension.getEntities({ type: "minecraft:wither" });
+            for (const wither of withers) {
+                const witherBlock = dimension.getBlock(wither.location);
+                const witherArea = findAreaByLocation(witherBlock, dimension.id, allArea);
+                if (witherArea) {
+                    wither.remove();
+                }
+            }
+            const equippable = player.getComponent("equippable");
+            const slot = equippable.getEquipmentSlot(EquipmentSlot.Mainhand)
+
             // player.sendMessage(`${JSON.stringify(player.location)}`)
-            const playerBlock = player.dimension.getBlock(player.location)
+            let playerBlock = null
+            try {
+                playerBlock = player.dimension.getBlock(player.location)
+            } catch (error) {
+                // console.error(' nu uh ' + error)
+                continue
+            }
             const playerArea = findAreaByLocation(playerBlock, player.dimension.id, allArea)
 
             const lastArea = playerLastAreas.get(player.name)
@@ -65,13 +71,31 @@ export const blockInteractionHandler = (event, hold, isInteract) => {
     // if (hold) {
     //     return
     // }
-    const eventLocation = event?.block || event?.source?.dimension.getBlock(event?.source?.location)
+    // let playerBlock = null
+    // try {
+    //     playerBlock = player.dimension.getBlock(player.location)
+    // } catch (error) {
+    //     // console.error(' nu uh ' + error)
+    //     continue
+    // }
+    try {
+
+    let altEventLocation
+
+    try {
+        altEventLocation = event?.source?.dimension.getBlock(event?.source?.location)
+    } catch (error) {
+        const suspect = event?.source?.name || event?.player?.name
+        console.warn(suspect + ' causing error :< ' + error)
+        return
+    }
+
+    const eventLocation = event?.block || altEventLocation
     const eventDimension = event?.player?.dimension.id || event?.source?.dimension.id
     const eventSource = event?.source || event?.player
 
     const whitelistedBlocks = ["minecraft:ender_chest"]
 
-    try {
         const area = findAreaByLocation(eventLocation, eventDimension, MimiLandData.getData('mimi_land'))
         if (area) {
             if (isAllowed(eventSource, area)) {

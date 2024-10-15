@@ -50,7 +50,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
                 ]
 
                 // console.log(JSON.stringify([newArea, player.dimension.id, existingAreas]))
-                console.log(JSON.stringify(isOverlapping(newArea, player.dimension.id, existingAreas)))
+                // console.log(JSON.stringify(isOverlapping(newArea, player.dimension.id, existingAreas)))
                 if (isOverlapping(newArea, player.dimension.id, existingAreas)) {
                     player.sendMessage(`${config["chat-prefix"]} §eThis selection overlaps with existing land!`)
                     // player.playSound("random.break")

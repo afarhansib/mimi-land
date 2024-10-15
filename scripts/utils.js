@@ -168,7 +168,7 @@ export const showLandInfo = (player, playerArea) => {
 }
 
 export function isOverlapping(newArea, newAreaDimension, existingAreas) {
-    console.log(JSON.stringify(arguments))
+    // console.log(JSON.stringify(arguments))
     const [newA, newB] = newArea
     const newMin = {
         x: Math.min(newA.x, newB.x),
@@ -202,3 +202,11 @@ export function isOverlapping(newArea, newAreaDimension, existingAreas) {
     })
 }
 
+export function sortOwners(owners, sortedBy) {
+    if (sortedBy === 'by alphabet') {
+        return owners.sort((a, b) => a.owner.localeCompare(b.owner))
+    } else if (sortedBy === 'by total') {
+        return owners.sort((a, b) => b.count - a.count)
+    }
+    return owners // Default case if sortedBy doesn't match
+}

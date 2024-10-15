@@ -13,7 +13,7 @@ export class MimiLandData {
             world.setDynamicProperty(`${key}_chunk_${i}`, chunks[i]);
         }
         world.setDynamicProperty(`${key}_chunks`, chunks.length);
-        
+
     }
 
     static getData(key) {
@@ -24,7 +24,7 @@ export class MimiLandData {
             data += world.getDynamicProperty(`${key}_chunk_${i}`) || '';
         }
         return this.safeJSONParse(data);
-    }    
+    }
 
     static addData(key, newEntry) {
         let existingData = this.getData(key) || [];
@@ -76,13 +76,27 @@ export class MimiLandData {
         history.push({ timestamp: toIsoStringWTZ(new Date()), oldData });
         this.setData(`${key}_history`, history, true);
     }
-    
+
     static createDataCheckpoint(key) {
         const data = this.getData(key);
         const checkpoints = this.getData(`${key}_checkpoints`) || [];
         checkpoints.push({ timestamp: toIsoStringWTZ(new Date()), data });
         this.setData(`${key}_checkpoints`, checkpoints, true);
     }
+
+    static getOwner() {
+        const data = this.getData("mimi_land")
+        const ownerMap = new Map()
     
+        data.forEach(area => {
+            if (ownerMap.has(area.owner)) {
+                ownerMap.set(area.owner, ownerMap.get(area.owner) + 1)
+            } else {
+                ownerMap.set(area.owner, 1)
+            }
+        })
     
+        return Array.from(ownerMap, ([owner, count]) => ({ owner, count }))
+    }    
+
 }
