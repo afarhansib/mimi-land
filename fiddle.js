@@ -118,3 +118,9 @@ world.afterEvents.itemUse.subscribe(event => {
         // world.sendMessage(`Mimi Land Data: ${JSON.stringify(mimiData)}`)
     }
 })
+
+// {
+//     "module_name": "@minecraft/server-net",
+//     "version": "1.0.0-beta"
+// },
+// add those to manifest.json

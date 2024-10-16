@@ -118,11 +118,10 @@ world.beforeEvents.explosion.subscribe(event => explosionHandler(event))
 world.beforeEvents.itemUse.subscribe(event => blockInteractionHandler(event))
 
 import * as GT from "@minecraft/server-gametest"
-import { scriptEventHandler } from "./scriptevent"
 import { blockInteractionHandler, explosionHandler, mimiLandRunner } from "./protection"
 GT.registerAsync("mimibot", "spawn", spawnBot)
-    .maxTicks(2147483647)
-    .structureName("mimi:air")
+.maxTicks(2147483647)
+.structureName("mimi:air")
 
 // Command to spawn the bot
 world.afterEvents.chatSend.subscribe((event) => {
@@ -134,7 +133,7 @@ world.afterEvents.chatSend.subscribe((event) => {
 
 world.afterEvents.playerJoin.subscribe((event) => {
     const player = event.playerName
-
+    
     console.log(`${player} joined the server.`)
 })
 
@@ -142,4 +141,5 @@ system.runTimeout(async () => {
     // world.getDimension("overworld").runCommandAsync("function mimibot")
 }, 5 * 20)
 
-system.afterEvents.scriptEventReceive.subscribe(scriptEventHandler)
+// import { scriptEventHandler } from "./scriptevent"
+// system.afterEvents.scriptEventReceive.subscribe(scriptEventHandler)
