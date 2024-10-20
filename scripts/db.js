@@ -3,10 +3,10 @@ import { toIsoStringWTZ } from "./utils";
 
 export class MimiLandData {
     static setData(key, data, isInternal = false) {
-        if (!isInternal) {
-            const oldData = this.getData(key);
-            this.storeDataHistory(key, oldData);
-        }
+        // if (!isInternal) {
+        //     const oldData = this.getData(key);
+        //     this.storeDataHistory(key, oldData);
+        // }
 
         const chunks = this.chunkData(JSON.stringify(data));
         for (let i = 0; i < chunks.length; i++) {
