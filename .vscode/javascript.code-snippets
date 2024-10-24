@@ -1,0 +1,12 @@
+{
+    "Dev Block": {
+      "prefix": "dev",
+      "body": [
+        "// @dev-start",
+        "$1",
+        "// @dev-end"
+      ],
+      "description": "Add development-only code block"
+    }
+  }
+  

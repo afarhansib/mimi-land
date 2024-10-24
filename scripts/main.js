@@ -1,11 +1,15 @@
 console.log(`Mimi Land loaded.`)
 
-import { world, system, Player } from "@minecraft/server"
+import { world, system} from "@minecraft/server"
 import { MimiLandData } from "./db"
-import { createParticleAroundBlock, createParticleBox, findAreaByLocation, generateFantasyName, isMimiItem, isOverlapping, readableCoords, sleep } from "./utils"
+import { createParticleBox, findAreaByLocation, isMimiItem, isOverlapping, readableCoords} from "./utils"
 import { config } from "./config"
 import { MimiLandGUI } from "./gui"
+import { blockInteractionHandler, explosionHandler, mimiLandRunner } from "./protection"
+
+// @dev-start
 import { spawnBot } from "./bot"
+// @dev-end
 
 world.afterEvents.itemUse.subscribe(event => {
     const { itemStack, source } = event
@@ -78,8 +82,8 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
 
             if (overlappingArea) {
                 player.sendMessage(`${config["chat-prefix"]} §eThis block is inside an existing land!`)
-                // player.playSound("random.break")
                 return
+                // player.playSound("random.break")
             }
 
             selectedCoords.set(player, [{ x, y, z }])
@@ -105,24 +109,25 @@ system.runInterval(() => {
 
 world.beforeEvents.playerPlaceBlock.subscribe(event => blockInteractionHandler(event))
 world.beforeEvents.playerBreakBlock.subscribe(event => blockInteractionHandler(event))
-// world.beforeEvents.playerInteractWithBlock.subscribe(event => blockInteractionHandler(event, !event.isFirstEvent, true))
+world.beforeEvents.itemUse.subscribe(event => blockInteractionHandler(event))
 world.beforeEvents.playerInteractWithBlock.subscribe(event => blockInteractionHandler(event, null, true))
-// world.beforeEvents.playerInteractWithEntity.subscribe(event => blockInteractionHandler(event, null, true))
 world.beforeEvents.explosion.subscribe(event => explosionHandler(event))
+// world.beforeEvents.playerInteractWithBlock.subscribe(event => blockInteractionHandler(event, !event.isFirstEvent, true))
+// world.beforeEvents.playerInteractWithEntity.subscribe(event => blockInteractionHandler(event, null, true))
 // system.runInterval(() => {
 //     // let selectedCoords = [{"x":-498,"y":67,"z":-2000},{"x":-506,"y":62,"z":-2006}]
 //     createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
 //     // createParticleBox(world.getDimension('overworld'), selectedCoords[0], selectedCoords[1])
 // }, 20)
 
-world.beforeEvents.itemUse.subscribe(event => blockInteractionHandler(event))
 
+// @dev-start
 import * as GT from "@minecraft/server-gametest"
 import { scriptEventHandler } from "./scriptevent"
-import { blockInteractionHandler, explosionHandler, mimiLandRunner } from "./protection"
+
 GT.registerAsync("mimibot", "spawn", spawnBot)
-    .maxTicks(2147483647)
-    .structureName("mimi:air")
+.maxTicks(2147483647)
+.structureName("mimi:air")
 
 // Command to spawn the bot
 world.afterEvents.chatSend.subscribe((event) => {
@@ -134,7 +139,7 @@ world.afterEvents.chatSend.subscribe((event) => {
 
 world.afterEvents.playerJoin.subscribe((event) => {
     const player = event.playerName
-
+    
     console.log(`${player} joined the server.`)
 })
 
@@ -143,3 +148,4 @@ system.runTimeout(async () => {
 }, 5 * 20)
 
 system.afterEvents.scriptEventReceive.subscribe(scriptEventHandler)
+// @dev-end

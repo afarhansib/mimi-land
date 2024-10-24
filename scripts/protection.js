@@ -80,21 +80,21 @@ export const blockInteractionHandler = (event, hold, isInteract) => {
     // }
     try {
 
-    let altEventLocation
+        let altEventLocation
 
-    try {
-        altEventLocation = event?.source?.dimension.getBlock(event?.source?.location)
-    } catch (error) {
-        const suspect = event?.source?.name || event?.player?.name
-        console.warn(suspect + ' causing error :< ' + error)
-        return
-    }
+        try {
+            altEventLocation = event?.source?.dimension.getBlock(event?.source?.location)
+        } catch (error) {
+            const suspect = event?.source?.name || event?.player?.name
+            console.warn(suspect + ' causing error :< ' + error)
+            return
+        }
 
-    const eventLocation = event?.block || altEventLocation
-    const eventDimension = event?.player?.dimension.id || event?.source?.dimension.id
-    const eventSource = event?.source || event?.player
+        const eventLocation = event?.block || altEventLocation
+        const eventDimension = event?.player?.dimension.id || event?.source?.dimension.id
+        const eventSource = event?.source || event?.player
 
-    const whitelistedBlocks = ["minecraft:ender_chest"]
+        const whitelistedBlocks = ["minecraft:ender_chest"]
 
         const area = findAreaByLocation(eventLocation, eventDimension, MimiLandData.getData('mimi_land'))
         if (area) {
