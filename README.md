@@ -29,3 +29,6 @@ Transform your Minecraft world into a protected paradise! Watch enchanting parti
 4. Share your paradise through the dazzling GUI system
 
 Level up your server with the most exciting land protection addon that turns claiming territory into an epic adventure! Perfect for servers seeking both powerful protection and magical style! ✨
+
+New Logo made with Blockbench using the following Plugin:
+https://ewanhowell.com/plugins/minecraft-title-generator/
