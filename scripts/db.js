@@ -85,7 +85,7 @@ export class MimiLandData {
     }
 
     static getOwner() {
-        const data = this.getData("mimi_land")
+        const data = this.getData("mimi_land") || []
         const ownerMap = new Map()
     
         data.forEach(area => {

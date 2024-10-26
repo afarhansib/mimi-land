@@ -9,7 +9,7 @@ export const scriptEventHandler = async e => {
         case "mimi:land-print":
             const mimiData = MimiLandData.getData('mimi_land')
             console.log(`Mimi Land Data Length: ${JSON.stringify(mimiData).length}`)
-            // console.log(JSON.stringify(mimiData, null, 2))
+            console.log(JSON.stringify(mimiData, null, 2))
             // const result = await MimiLandAPI.sendData("data", mimiData);
             // console.log(JSON.stringify(result))
             break;

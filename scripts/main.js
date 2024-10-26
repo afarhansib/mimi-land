@@ -48,9 +48,10 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
 
                 const firstCoord = selectedCoords.get(player)[0]
                 const existingAreas = MimiLandData.getData("mimi_land") || []
+                const newY2 = config["defaultY2"]
                 const newArea = [
-                    { x: Math.min(firstCoord.x, x), y: Math.min(firstCoord.y, y), z: Math.min(firstCoord.z, z) },
-                    { x: Math.max(firstCoord.x, x), y: Math.max(firstCoord.y, y), z: Math.max(firstCoord.z, z) }
+                    { x: Math.min(firstCoord.x, x), y: Math.min(firstCoord.y, newY2), z: Math.min(firstCoord.z, z) },
+                    { x: Math.max(firstCoord.x, x), y: Math.max(firstCoord.y, newY2), z: Math.max(firstCoord.z, z) }
                 ]
 
                 // console.log(JSON.stringify([newArea, player.dimension.id, existingAreas]))
@@ -61,9 +62,9 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
                     return
                 }
 
-                selectedCoords.get(player)[1] = { x, y, z }
+                selectedCoords.get(player)[1] = { x, y: newY2, z }
 
-                player.sendMessage(`${config["chat-prefix"]} §lSecond§r position set to (§e${readableCoords(block.location)}§r).`)
+                player.sendMessage(`${config["chat-prefix"]} §lSecond§r position set to (§e${readableCoords(selectedCoords.get(player)[1])}§r).`)
                 system.run(() => {
                     createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
                     player.playSound("random.pop2")
@@ -79,6 +80,8 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
             const overlappingArea = findAreaByLocation(block.location, player.dimension.id, existingAreas)
             // console.log(JSON.stringify([block.location, player.dimension.id, existingAreas]))
             // console.log(JSON.stringify(overlappingArea))
+            const newY1 = config["defaultY1"]
+            const newY2 = config["defaultY2"]
 
             if (overlappingArea) {
                 player.sendMessage(`${config["chat-prefix"]} §eThis block is inside an existing land!`)
@@ -86,15 +89,20 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
                 // player.playSound("random.break")
             }
 
-            selectedCoords.set(player, [{ x, y, z }])
-            player.sendMessage(`${config["chat-prefix"]} §lFirst§r position set to (§e${readableCoords(block.location)}§r).`)
+            selectedCoords.set(player, [{ x, y: newY1, z }])
+            // @dev-start
+            // console.log(JSON.stringify(selectedCoords.get(player)))
+            // console.log(JSON.stringify(selectedCoords))
+            // console.log(JSON.stringify(block.location))
+            // @dev-end
+            player.sendMessage(`${config["chat-prefix"]} §lFirst§r position set to (§e${readableCoords(selectedCoords.get(player)[0])}§r).`)
             system.run(() => {
                 // createParticleAroundBlock(player.dimension, 'minecraft:villager_happy', { x, y, z })
-                createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[0])
+                createParticleBox(player.dimension, {x, y: newY1, z}, {x, y: newY2, z})
                 player.playSound("random.pop2")
                 const particleDimension = player.dimension
                 ParticleRunner = system.runInterval(() => {
-                    createParticleBox(particleDimension, selectedCoords.get(player)[0], selectedCoords.get(player)[0])
+                    createParticleBox(particleDimension, {x, y: newY1, z}, {x, y: newY2, z})
                 }, 20 * 1)
             })
         }

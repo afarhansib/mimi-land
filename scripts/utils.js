@@ -26,6 +26,8 @@ export function generateFantasyName(short = false) {
 
 export const readableCoords = ({ x, y, z }) => `X: ${x}, Y: ${y}, Z: ${z}`;
 
+export const readableXZCoords = ({ x, y, z }) => `X: ${x}, Z: ${z}`;
+
 export function formatDimensionName(dimensionId) {
     const name = dimensionId.split(':')[1].replace(/_/g, ' ')
     return name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')

@@ -1,6 +1,6 @@
 import { ActionFormData, MessageFormData, ModalFormData } from "@minecraft/server-ui";
 import { config } from "./config";
-import { cleanNames, formatDimensionName, generateFantasyName, getSelectedNames, nanoid, readableCoords, sortOwners, toIsoStringWTZ } from "./utils";
+import { cleanNames, formatDimensionName, generateFantasyName, getSelectedNames, nanoid, readableCoords, readableXZCoords, sortOwners, toIsoStringWTZ } from "./utils";
 import { system, world } from "@minecraft/server";
 import { MimiLandData } from "./db";
 
@@ -100,24 +100,40 @@ export class MimiLandGUI {
     }
 
     static handleCreateLand(player, selectedCoords, ParticleRunner) {
+        // @dev-start
+        console.log(JSON.stringify(selectedCoords.get(player)))
+        // @dev-end
+        const coords1 = selectedCoords.get(player)[0]
+        const coords2 = selectedCoords.get(player)[1]
         const createLandModal = new ModalFormData()
             .title("Create Land")
             .textField("Land Name", "Enter a name for your land", generateFantasyName())
-            .dropdown("First Position §l§4(not editable)", [readableCoords(selectedCoords.get(player)[0])])
-            .dropdown("Second Position §l§4(not editable)", [readableCoords(selectedCoords.get(player)[1])])
-            .dropdown("Dimension §l§4(not editable)", [formatDimensionName(player.dimension.id)])
+            .textField(`First §l§6Y§r Position (§l§6${readableXZCoords(coords1)}§r)`, String(coords1['y']), String(coords1['y']))
+            .textField(`Second §l§6Y§r Position (§l§6${readableXZCoords(coords2)}§r)`, String(coords2['y']), String(coords2['y']))
+            // .dropdown("Dimension §l§4(not editable)", [formatDimensionName(player.dimension.id)])
             .submitButton("§lCREATE")
 
         createLandModal.show(player).then(({ canceled, formValues }) => {
             if (canceled) return
-            // console.log(formValues)
             const landName = formValues[0]
+            const y1 = Number(formValues[1])
+            const y2 = Number(formValues[2])
+
+            if(!(y1 && y2)) {
+                player.sendMessage(`${config["chat-prefix"]} §lInvalid Y-Coordinates!`)
+                return
+            }
+
+            coords1.y = y1 < -9999 ? -9999 : y1 
+            coords2.y = y2 > 9999 ? 9999 : y2
+
+            // console.log("y1", y1, "y2", y2)
             MimiLandData.addData(`mimi_land`, {
                 name: landName,
                 id: nanoid(),
                 owner: player.name,
-                from: selectedCoords.get(player)[0],
-                to: selectedCoords.get(player)[1],
+                from: coords1,
+                to: coords2,
                 dimension: player.dimension.id,
                 created: toIsoStringWTZ(new Date())
             })
@@ -128,10 +144,12 @@ export class MimiLandGUI {
     }
 
     static handleAdminPanel(player, selectedCoords) {
-        const allLands = MimiLandData.getData(`mimi_land`)
-        const allOwners = MimiLandData.getOwner()
+        const allLands = MimiLandData.getData(`mimi_land`) || []
+        const allOwners = MimiLandData.getOwner() || []
+        // @dev-start
+        // console.log(JSON.stringify('logged'))
+        // @dev-end
 
-        // console.log(JSON.stringify(allOwners))
 
         const stats = [
             `\n${config["chat-prefix"]} Statistics:\n `,
@@ -139,6 +157,7 @@ export class MimiLandGUI {
             `§lTotal Owner: §r§a${allOwners.length}§r`,
             `\n`
         ]
+
 
         const adminPanel = new ActionFormData()
         adminPanel.title("§lMimi Land§r Admin")
@@ -279,9 +298,18 @@ export class MimiLandGUI {
             allPlayersNoOwner = [...new Set(allPlayersNoOwner)]
         }
 
+        // @dev-start
+        // console.log(JSON.stringify(area))
+        // @dev-end
+
+        const coords1 = area.from
+        const coords2 = area.to
+
         const createLandModal = new ModalFormData()
             .title(`Modify ${area.name}`)
             .textField("New Land Name", "Enter a name for your land", area.name)
+            .textField(`New First §l§6Y§r Position (§l§6${readableCoords(coords1)}§r)`, String(coords1['y']), String(coords1['y']))
+            .textField(`New Second §l§6Y§r Position (§l§6${readableCoords(coords2)}§r)`, String(coords2['y']), String(coords2['y']))
             .textField("New Land Owner", "Enter a name for your land's owner", area.owner)
             .dropdown("Or Select New Land Owner", ['§o-select-', ...allPlayersNoOwner])
             .textField("Add Player to Whitelist - §o§7or add from online players below", "Add multiple Name with , (comma)")
@@ -293,24 +321,38 @@ export class MimiLandGUI {
         createLandModal.submitButton("§lSAVE")
         createLandModal.show(player).then(({ canceled, formValues }) => {
             if (canceled) return
+            const y1 = Number(formValues[1])
+            const y2 = Number(formValues[2])
+
+            if(!(y1 && y2)) {
+                player.sendMessage(`${config["chat-prefix"]} §lInvalid Y-Coordinates!`)
+                return
+            }
+            coords1.y = y1 < -9999 ? -9999 : y1 
+            coords2.y = y2 > 9999 ? 9999 : y2
+            
             const newLandDetails = {
-                name: formValues[0]
+                name: formValues[0],
+                from: coords1,
+                to: coords2,
             }
 
-            newLandDetails.whitelisted = cleanNames(formValues[3])
+            newLandDetails.whitelisted = cleanNames(formValues[5])
             newLandDetails.whitelisted = [...new Set([...newLandDetails.whitelisted, ...getSelectedNames(allPlayersNoOwner, formValues)])]
 
-            if (formValues[2] !== 0) {
-                newLandDetails.owner = allPlayersNoOwner[formValues[2] - 1]
+            // console.log(JSON.stringify(newLandDetails))
+
+            if (formValues[4] !== 0) {
+                newLandDetails.owner = allPlayersNoOwner[formValues[4] - 1]
             } else {
-                newLandDetails.owner = formValues[1]
+                newLandDetails.owner = formValues[3]
             }
 
             MimiLandData.updateDataById(`mimi_land`, area.id, newLandDetails)
             player.sendMessage(`${config["chat-prefix"]} §lLand §r§a"${area.name}"§r§l modified!`)
 
             // console.log(JSON.stringify(allPlayersNoOwner))
-            // console.log(JSON.stringify(formValues))
+            console.log(JSON.stringify(formValues))
             // console.log(JSON.stringify(newLandDetails))
         })
     }
@@ -388,7 +430,7 @@ export class MimiLandGUI {
 
         sortedLands.forEach(land => {
             buttonActions.push({
-                text: `${land.name}`,
+                text: `§l${land.name}\n§r§o§4${land.owner}`,
                 action: () => {
                     this.handleLandDetails(player, land, selectedCoords)
                 }
