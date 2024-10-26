@@ -34,8 +34,28 @@ function getTimestamp() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`
 }
 
+function toIsoStringWTZ(date) {
+    var tzo = -date.getTimezoneOffset(),
+        dif = tzo >= 0 ? '+' : '-',
+        pad = function (num) {
+            return (num < 10 ? '0' : '') + num;
+        };
+
+    return date.getFullYear() +
+        '-' + pad(date.getMonth() + 1) +
+        '-' + pad(date.getDate()) +
+        'T' + pad(date.getHours()) +
+        ':' + pad(date.getMinutes()) +
+        ':' + pad(date.getSeconds()) +
+        dif + pad(Math.floor(Math.abs(tzo) / 60)) +
+        ':' + pad(Math.abs(tzo) % 60);
+}
+
 function cleanManifest(content) {
     const manifest = JSON.parse(content)
+
+    manifest.header.description = manifest.header.description + "\nBuilt at " + toIsoStringWTZ(new Date())
+    // manifest.header.description = `${manifest.header.description} Built at ${getTimestamp()}`
     const devDependencies = ['@minecraft/server-net', '@minecraft/server-gametest']
     manifest.dependencies = manifest.dependencies.filter(dep => 
         !devDependencies.includes(dep.module_name)
