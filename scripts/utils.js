@@ -160,7 +160,7 @@ export function getSelectedNames(names, formResult) {
 }
 
 export const showLandInfo = (player, playerArea) => {
-    createParticleBox(player.dimension, playerArea.from, playerArea.to)
+    // createParticleBox(player.dimension, playerArea.from, playerArea.to)
     const landDetails = [
         `${config["chat-prefix"]}\n`,
         `§lName: §r§a${playerArea.name}§r`,

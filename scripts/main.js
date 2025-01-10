@@ -66,13 +66,13 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
 
                 player.sendMessage(`${config["chat-prefix"]} §lSecond§r position set to (§e${readableCoords(selectedCoords.get(player)[1])}§r).`)
                 system.run(() => {
-                    createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
+                    // createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
                     player.playSound("random.pop2")
-                    system.clearRun(ParticleRunner)
-                    const particleDimension = player.dimension
-                    ParticleRunner = system.runInterval(() => {
-                        createParticleBox(particleDimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
-                    }, 20 * 1)
+                    // system.clearRun(ParticleRunner)
+                    // const particleDimension = player.dimension
+                    // ParticleRunner = system.runInterval(() => {
+                    //     createParticleBox(particleDimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
+                    // }, 20 * 1)
                 })
             }
         } else {
@@ -98,12 +98,12 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
             player.sendMessage(`${config["chat-prefix"]} §lFirst§r position set to (§e${readableCoords(selectedCoords.get(player)[0])}§r).`)
             system.run(() => {
                 // createParticleAroundBlock(player.dimension, 'minecraft:villager_happy', { x, y, z })
-                createParticleBox(player.dimension, {x, y: newY1, z}, {x, y: newY2, z})
+                // createParticleBox(player.dimension, {x, y: newY1, z}, {x, y: newY2, z})
                 player.playSound("random.pop2")
-                const particleDimension = player.dimension
-                ParticleRunner = system.runInterval(() => {
-                    createParticleBox(particleDimension, {x, y: newY1, z}, {x, y: newY2, z})
-                }, 20 * 1)
+                // const particleDimension = player.dimension
+                // ParticleRunner = system.runInterval(() => {
+                //     createParticleBox(particleDimension, {x, y: newY1, z}, {x, y: newY2, z})
+                // }, 20 * 1)
             })
         }
     }
