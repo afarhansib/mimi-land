@@ -7,6 +7,7 @@ export class MimiLandData {
         //     const oldData = this.getData(key);
         //     this.storeDataHistory(key, oldData);
         // }
+        this.clearCache()
 
         const chunks = this.chunkData(JSON.stringify(data));
         for (let i = 0; i < chunks.length; i++) {
@@ -16,14 +17,34 @@ export class MimiLandData {
 
     }
 
+    static cache = new Map()
+    static cacheTimestamps = new Map()
+    static CACHE_DURATION = 10000 // 10 seconds
     static getData(key) {
+        const now = Date.now()
+        const cachedData = this.cache.get(key)
+        const cacheTime = this.cacheTimestamps.get(key)
+        
+        // Return cache if valid
+        if (cachedData && cacheTime && now - cacheTime < this.CACHE_DURATION) {
+            return cachedData
+        }
+        
+        //console.log('cache expired, refreshing mimi land data...')
+        
         const chunkCount = world.getDynamicProperty(`${key}_chunks`)
         if (!chunkCount) return null;
         let data = ''
         for (let i = 0; i < chunkCount; i++) {
             data += world.getDynamicProperty(`${key}_chunk_${i}`) || '';
         }
-        return this.safeJSONParse(data);
+        const parsedData = this.safeJSONParse(data)
+        
+        // Update cache
+        this.cache.set(key, parsedData)
+        this.cacheTimestamps.set(key, now)
+        
+        return parsedData
     }
 
     static addData(key, newEntry) {
@@ -99,4 +120,8 @@ export class MimiLandData {
         return Array.from(ownerMap, ([owner, count]) => ({ owner, count }))
     }    
 
+    static clearCache() {
+        this.cache.clear()
+        this.cacheTimestamps.clear()
+    }
 }

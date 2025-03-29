@@ -91,7 +91,9 @@ export class MimiLandGUI {
         confirmModal.show(player).then(({ selection }) => {
             if (selection === 1) {
                 selectedCoords.delete(player)
-                system.clearRun(ParticleRunner)
+                if (ParticleRunner) {
+                    system.clearRun(ParticleRunner)
+                }
                 player.sendMessage(`${config["chat-prefix"]} §lSelection cancelled.`)
             } else {
                 this.openMenu(player, selectedCoords)
@@ -138,7 +140,9 @@ export class MimiLandGUI {
                 created: toIsoStringWTZ(new Date())
             })
             player.sendMessage(`${config["chat-prefix"]} §lLand §r§a"${landName}"§r§l created!`)
-            system.clearRun(ParticleRunner)
+            if (ParticleRunner) {
+                system.clearRun(ParticleRunner)
+            }
             selectedCoords.delete(player)
         })
     }

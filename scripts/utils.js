@@ -41,33 +41,33 @@ export function sleep(ticks) {
     })
 }
 
-export function createParticleBox(dimension, pos1, pos2) {
+export function createParticleBox(dimension, pos1, pos2, cycle = 0) {
     const minX = Math.min(pos1.x, pos2.x);
     const minY = Math.min(pos1.y, pos2.y);
     const minZ = Math.min(pos1.z, pos2.z);
     const maxX = Math.max(pos1.x, pos2.x) + 1;
     const maxY = Math.max(pos1.y, pos2.y) + 1;
     const maxZ = Math.max(pos1.z, pos2.z) + 1;
-    // const particleType = "minecraft:endrod";
-    // const particleType = "minecraft:villager_happy";
+
     const particleType = "minecraft:balloon_gas_particle";
 
-    // Create the edges of the box
-    for (let x = minX; x <= maxX; x++) {
+    const offset = cycle % 4;
+
+    for (let x = minX + offset; x <= maxX; x += 4) {
         trySpawnParticle(dimension, particleType, { x, y: minY, z: minZ });
         trySpawnParticle(dimension, particleType, { x, y: minY, z: maxZ });
         trySpawnParticle(dimension, particleType, { x, y: maxY, z: minZ });
         trySpawnParticle(dimension, particleType, { x, y: maxY, z: maxZ });
     }
 
-    for (let y = minY; y <= maxY; y++) {
+    for (let y = minY + offset; y <= maxY; y += 4) {
         trySpawnParticle(dimension, particleType, { x: minX, y, z: minZ });
         trySpawnParticle(dimension, particleType, { x: minX, y, z: maxZ });
         trySpawnParticle(dimension, particleType, { x: maxX, y, z: minZ });
         trySpawnParticle(dimension, particleType, { x: maxX, y, z: maxZ });
     }
 
-    for (let z = minZ; z <= maxZ; z++) {
+    for (let z = minZ + offset; z <= maxZ; z += 4) {
         trySpawnParticle(dimension, particleType, { x: minX, y: minY, z });
         trySpawnParticle(dimension, particleType, { x: minX, y: maxY, z });
         trySpawnParticle(dimension, particleType, { x: maxX, y: minY, z });
@@ -75,9 +75,40 @@ export function createParticleBox(dimension, pos1, pos2) {
     }
 }
 
+export function createParticleBoxWithSubchunks(dimension, pos1, pos2) {
+    const minX = Math.min(pos1.x, pos2.x);
+    const minY = Math.min(pos1.y, pos2.y);
+    const minZ = Math.min(pos1.z, pos2.z);
+    const maxX = Math.max(pos1.x, pos2.x) + 1;
+    const maxY = Math.max(pos1.y, pos2.y) + 1;
+    const maxZ = Math.max(pos1.z, pos2.z) + 1;
+
+    const particleType = "minecraft:balloon_gas_particle";
+    const subchunkParticleType = "minecraft:villager_happy";
+
+    createParticleBox(dimension, pos1, pos2);
+
+    const startY = Math.floor(minY / 16) * 16;
+    const endY = Math.ceil(maxY / 16) * 16;
+
+    for (let y = startY; y <= endY; y += 16) {
+
+        for (let x = minX; x <= maxX; x++) {
+            trySpawnParticle(dimension, subchunkParticleType, { x, y, z: minZ });
+            trySpawnParticle(dimension, subchunkParticleType, { x, y, z: maxZ });
+        }
+
+        for (let z = minZ; z <= maxZ; z++) {
+            trySpawnParticle(dimension, subchunkParticleType, { x: minX, y, z });
+            trySpawnParticle(dimension, subchunkParticleType, { x: maxX, y, z });
+        }
+    }
+}
+
 function trySpawnParticle(dimension, particleType, location) {
     try {
-        dimension.spawnParticle(particleType, location);
+        //dimension.spawnParticle(particleType, location);
+        dimension.runCommand('particle ' + particleType + ' ' + location.x + ' ' + location.y + ' ' + location.z)
     } catch (error) {
         // Ignore the error and continue
     }
@@ -159,14 +190,20 @@ export function getSelectedNames(names, formResult) {
     return names.filter((name, index) => booleans[index])
 }
 
+let particleCycle = 0;
+
 export const showLandInfo = (player, playerArea) => {
-    // createParticleBox(player.dimension, playerArea.from, playerArea.to)
+    //createParticleBox(player.dimension, playerArea.from, playerArea.to, particleCycle)
+
     const landDetails = [
         `${config["chat-prefix"]}\n`,
         `§lName: §r§a${playerArea.name}§r`,
         `§lOwner: §r§a${playerArea.owner}§r`
     ]
+
     player.onScreenDisplay.setActionBar(landDetails.join("\n"))
+
+    particleCycle = (particleCycle + 1) % 4
 }
 
 export function isOverlapping(newArea, newAreaDimension, existingAreas) {

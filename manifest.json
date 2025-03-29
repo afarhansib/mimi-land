@@ -11,7 +11,7 @@
         "uuid": "f8b6a991-3b6d-4081-b7b3-2b6fa3b0c3d4",
         "version": [
             1,
-            0,
+            1,
             0
         ],
         "min_engine_version": [
@@ -36,11 +36,11 @@
     "dependencies": [
         {
             "module_name": "@minecraft/server",
-            "version": "1.18.0-beta"
+            "version": "2.0.0-beta"
         },
         {
             "module_name": "@minecraft/server-ui",
-            "version": "1.4.0-beta"
+            "version": "2.0.0-beta"
         },
         {
             "module_name": "@minecraft/server-net",

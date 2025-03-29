@@ -1,8 +1,8 @@
 console.log(`Mimi Land loaded.`)
 
-import { world, system} from "@minecraft/server"
+import { world, system } from "@minecraft/server"
 import { MimiLandData } from "./db"
-import { createParticleBox, findAreaByLocation, isMimiItem, isOverlapping, readableCoords} from "./utils"
+import { createParticleBox, findAreaByLocation, isMimiItem, isOverlapping, readableCoords } from "./utils"
 import { config } from "./config"
 import { MimiLandGUI } from "./gui"
 import { blockInteractionHandler, explosionHandler, mimiLandRunner } from "./protection"
@@ -108,7 +108,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe(event => {
         }
     }
 
-    
+
 })
 
 system.runInterval(() => {
@@ -127,15 +127,29 @@ world.beforeEvents.explosion.subscribe(event => explosionHandler(event))
 //     createParticleBox(player.dimension, selectedCoords.get(player)[0], selectedCoords.get(player)[1])
 //     // createParticleBox(world.getDimension('overworld'), selectedCoords[0], selectedCoords[1])
 // }, 20)
+system.afterEvents.scriptEventReceive.subscribe((event) => {
+    if (event.id === "mimi:land-gui") {
+        try {
+            MimiLandGUI.openMenu(event?.sourceEntity, selectedCoords, ParticleRunner)
+        } catch (err) {
 
+        }
+        //console.log(event.id)
+        //console.log(event?.sourceBlock)
+        //console.log(event?.initiator)
+        //console.log(event?.message)
+        //console.log(event?.sourceEntity?.name)
+        //console.log(event?.sourceType)
+    }
+})
 
 // @dev-start
 import * as GT from "@minecraft/server-gametest"
 import { scriptEventHandler } from "./scriptevent"
 
 GT.registerAsync("mimibot", "spawn", spawnBot)
-.maxTicks(2147483647)
-.structureName("mimi:air")
+    .maxTicks(2147483647)
+    .structureName("mimi:air")
 
 // Command to spawn the bot
 world.afterEvents.chatSend.subscribe((event) => {
@@ -147,7 +161,7 @@ world.afterEvents.chatSend.subscribe((event) => {
 
 world.afterEvents.playerJoin.subscribe((event) => {
     const player = event.playerName
-    
+
     console.log(`${player} joined the server.`)
 })
 
