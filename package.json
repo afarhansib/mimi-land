@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "@minecraft/server": "1.16.0-beta.1.21.40-preview.25",
-    "@minecraft/server-gametest": "1.0.0-beta.1.21.40-preview.25",
-    "@minecraft/server-ui": "1.4.0-beta.1.21.40-preview.25"
+    "@minecraft/server": "^2.0.0-beta.1.21.81-stable",
+    "@minecraft/server-gametest": "^1.0.0-beta.1.21.81-stable",
+    "@minecraft/server-ui": "^2.0.0-beta.1.21.81-stable"
   },
   "scripts": {
     "build": "node scripts/build.js"

@@ -109,9 +109,9 @@ export class MimiLandGUI {
         const coords2 = selectedCoords.get(player)[1]
         const createLandModal = new ModalFormData()
             .title("Create Land")
-            .textField("Land Name", "Enter a name for your land", generateFantasyName())
-            .textField(`First §l§6Y§r Position (§l§6${readableXZCoords(coords1)}§r)`, String(coords1['y']), String(coords1['y']))
-            .textField(`Second §l§6Y§r Position (§l§6${readableXZCoords(coords2)}§r)`, String(coords2['y']), String(coords2['y']))
+            .textField("Land Name", "Enter a name for your land", { defaultValue: generateFantasyName(), tooltip: 'Randomly generated cute name' })
+            .textField(`First §l§6Y§r Position (§l§6${readableXZCoords(coords1)}§r)`, String(coords1['y']), { defaultValue: String(coords1['y']), tooltip: 'You can only adjust Y value' })
+            .textField(`Second §l§6Y§r Position (§l§6${readableXZCoords(coords2)}§r)`, String(coords2['y']), { defaultValue: String(coords2['y']), tooltip: 'You can only adjust Y value' })
             // .dropdown("Dimension §l§4(not editable)", [formatDimensionName(player.dimension.id)])
             .submitButton("§lCREATE")
 
@@ -311,15 +311,15 @@ export class MimiLandGUI {
 
         const createLandModal = new ModalFormData()
             .title(`Modify ${area.name}`)
-            .textField("New Land Name", "Enter a name for your land", area.name)
-            .textField(`New First §l§6Y§r Position (§l§6${readableCoords(coords1)}§r)`, String(coords1['y']), String(coords1['y']))
-            .textField(`New Second §l§6Y§r Position (§l§6${readableCoords(coords2)}§r)`, String(coords2['y']), String(coords2['y']))
-            .textField("New Land Owner", "Enter a name for your land's owner", area.owner)
+            .textField("New Land Name", "Enter a name for your land", { defaultValue: area.name })
+            .textField(`New First §l§6Y§r Position (§l§6${readableCoords(coords1)}§r)`, String(coords1['y']), { defaultValue: String(coords1['y']) })
+            .textField(`New Second §l§6Y§r Position (§l§6${readableCoords(coords2)}§r)`, String(coords2['y']), { defaultValue: String(coords2['y']) })
+            .textField("New Land Owner", "Enter a name for your land's owner", { defaultValue: area.owner })
             .dropdown("Or Select New Land Owner", ['§o-select-', ...allPlayersNoOwner])
             .textField("Add Player to Whitelist - §o§7or add from online players below", "Add multiple Name with , (comma)")
 
         allPlayersNoOwner.forEach(player => {
-            createLandModal.toggle(player, area.whitelisted?.includes(player))
+            createLandModal.toggle(player, { defaultValue: area.whitelisted?.includes(player) })
         })
 
         createLandModal.submitButton("§lSAVE")
